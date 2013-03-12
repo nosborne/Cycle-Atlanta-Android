@@ -34,6 +34,9 @@ package edu.gatech.ppl.cycleatlanta;
 
 import java.util.ArrayList;
 
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.drawable.Drawable;
 
 import com.google.android.maps.ItemizedOverlay;
@@ -41,10 +44,18 @@ import com.google.android.maps.OverlayItem;
 
 public class ItemizedOverlayTrack extends ItemizedOverlay<OverlayItem> {
 	private final ArrayList<OverlayItem> overlays = new ArrayList<OverlayItem>();
+	Context mContext = null;
+	private boolean should_delete = false;
 
 	public ItemizedOverlayTrack(Drawable defaultMarker) {
 		super(boundCenter(defaultMarker));
 	}
+
+	public ItemizedOverlayTrack(Drawable defaultMarker, Context context) {
+		  super(boundCenterBottom(defaultMarker));
+		  mContext = context;
+		  populate();
+		}
 
 	@Override
 	protected OverlayItem createItem(int i) {
@@ -58,9 +69,36 @@ public class ItemizedOverlayTrack extends ItemizedOverlay<OverlayItem> {
 
 	public void addOverlay(OverlayItem overlay) {
 		overlays.add(overlay);
+		populate();
 	}
 
 	public void repopulate() {
 		populate();
+	}
+
+	public void delete_item(int index){
+		overlays.remove(index);
+	}
+
+	@Override
+	protected boolean onTap(int index) {
+	  final int index2 = index;
+	  if(mContext != null){
+		  should_delete = false;
+		  //OverlayItem item = overlays.get(index);
+		  AlertDialog.Builder dialog = new AlertDialog.Builder(mContext);
+		  //dialog.setTitle(item.getTitle());
+		  //dialog.setMessage(item.getSnippet());
+		  //dialog.setTitle("title");
+		  dialog.setMessage("Do you want to delete this road issue?");
+		  dialog.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+	           public void onClick(DialogInterface dialog, int id) {
+	        	   delete_item(index2);
+	           }
+	       });
+		  dialog.setNegativeButton("CANCEL", null);
+		  dialog.create().show();
+	  }
+	  return true;
 	}
 }

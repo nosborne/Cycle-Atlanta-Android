@@ -43,11 +43,13 @@ public class TripData {
 	double startTime = 0;
 	double endTime = 0;
 	int numpoints = 0;
+	int numflags = 0; //PAR
 	int lathigh, lgthigh, latlow, lgtlow, latestlat, latestlgt;
 	int status;
 	float distance;
 	String purp, fancystart, info;
 	private ItemizedOverlayTrack gpspoints;
+	private ItemizedOverlayTrack gpsflags; //PAR
 	GeoPoint startpoint, endpoint;
 	double totalPauseTime = 0;
 	double pauseStartedAt = 0;
@@ -81,6 +83,7 @@ public class TripData {
 		startTime = System.currentTimeMillis();
 		endTime = System.currentTimeMillis();
         numpoints = 0;
+        numflags = 0;
         latestlat = 800; latestlgt = 800;
         distance = 0;
 
@@ -120,6 +123,12 @@ public class TripData {
 	        points.close();
 		}
 
+		Cursor flags = mDb.fetchAllFlagsForTrip(tripid);
+		if (flags != null) {
+	        numflags = flags.getCount();
+	        flags.close();
+		}
+
 	    mDb.close();
 	}
 
@@ -132,6 +141,7 @@ public class TripData {
 	void dropTrip() {
 	    mDb.open();
 		mDb.deleteAllCoordsForTrip(tripid);
+		mDb.deleteAllFlagsForTrip(tripid);
 		mDb.deleteTrip(tripid);
 		mDb.close();
 	}
@@ -182,11 +192,64 @@ public class TripData {
 		return gpspoints;
 	}
 
+	public ItemizedOverlayTrack getFlags(Drawable d, Context context) {
+		// If already built, don't build again!
+		if (gpsflags != null && gpsflags.size()>0) {
+			return gpsflags;
+		}
+
+		// Otherwise, we need to query DB and build points from scratch.
+		gpsflags = new ItemizedOverlayTrack(d, context);
+
+		try {
+			mDb.openReadOnly();
+
+			Cursor flags = mDb.fetchAllFlagsForTrip(tripid);
+            int COL_LAT = flags.getColumnIndex("lat");
+            int COL_LGT = flags.getColumnIndex("lgt");
+            int COL_TIME = flags.getColumnIndex("time");
+            int COL_ACC  = flags.getColumnIndex(DbAdapter.K_POINT_ACC);
+
+            numflags = flags.getCount();
+
+           // points.moveToLast();
+           // this.endpoint   = new CyclePoint(points.getInt(COL_LAT), points.getInt(COL_LGT), points.getDouble(COL_TIME));
+
+              flags.moveToFirst();
+          //  this.startpoint = new CyclePoint(points.getInt(COL_LAT), points.getInt(COL_LGT), points.getDouble(COL_TIME));
+
+			while (!flags.isAfterLast()) {
+                int lat = flags.getInt(COL_LAT);
+                int lgt = flags.getInt(COL_LGT);
+                double time = flags.getDouble(COL_TIME);
+                float acc = (float) flags.getDouble(COL_ACC);
+
+                addFlagToSavedMap(lat, lgt, time, acc);
+				flags.moveToNext();
+			}
+			flags.close();
+			mDb.close();
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		gpsflags.repopulate();
+
+		return gpsflags;
+	}
+
 	private void addPointToSavedMap(int lat, int lgt, double currentTime, float acc) {
 		CyclePoint pt = new CyclePoint(lat, lgt, currentTime, acc);
 
 		OverlayItem opoint = new OverlayItem(pt, null, null);
 		gpspoints.addOverlay(opoint);
+	}
+
+	private void addFlagToSavedMap(int lat, int lgt, double currentTime, float acc) {
+		CyclePoint pt = new CyclePoint(lat, lgt, currentTime, acc);
+
+		OverlayItem oflag = new OverlayItem(pt, "flag_title", "flag_body");
+		gpsflags.addOverlay(oflag);
 	}
 
 	boolean addPointNow(Location loc, double currentTime, float dst) {
@@ -220,6 +283,30 @@ public class TripData {
         boolean rtn = mDb.addCoordToTrip(tripid, pt);
         rtn = rtn && mDb.updateTrip(tripid, "", startTime, "", "", "",
                 lathigh, latlow, lgthigh, lgtlow, distance);
+        mDb.close();
+
+        return rtn;
+	}
+
+	boolean addFlagNow(Location loc, double currentTime) {
+		int lat = (int) (loc.getLatitude() * 1E6);
+		int lgt = (int) (loc.getLongitude() * 1E6);
+
+		// Skip duplicates
+		//if (latestlat == lat && latestlgt == lgt)
+		//	return true;
+
+		float accuracy = loc.getAccuracy();
+		double altitude = loc.getAltitude();
+		float speed = loc.getSpeed();
+
+		CyclePoint pt = new CyclePoint(lat, lgt, currentTime, accuracy,
+				altitude, speed);
+
+		numflags++;
+
+        mDb.open();
+        boolean rtn = mDb.addFlagToTrip(tripid, pt);
         mDb.close();
 
         return rtn;

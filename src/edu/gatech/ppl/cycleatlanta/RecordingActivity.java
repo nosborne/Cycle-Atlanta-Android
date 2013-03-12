@@ -40,15 +40,22 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.hardware.Sensor;
+import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.PowerManager;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class RecordingActivity extends Activity {
+public class RecordingActivity extends Activity{
+	private SensorManager sm;
+	private Sensor magSensor;
+	protected PowerManager.WakeLock mWakeLock;
+
 	Intent fi;
 	TripData trip;
 	boolean isRecording = false;
@@ -63,6 +70,7 @@ public class RecordingActivity extends Activity {
     TextView txtCurSpeed;
     TextView txtMaxSpeed;
     TextView txtAvgSpeed;
+    TextView txtBumps;
 
     final SimpleDateFormat sdf = new SimpleDateFormat("H:mm:ss");
 
@@ -86,9 +94,14 @@ public class RecordingActivity extends Activity {
         txtCurSpeed = (TextView) findViewById(R.id.TextSpeed);
         txtMaxSpeed = (TextView) findViewById(R.id.TextMaxSpeed);
         txtAvgSpeed = (TextView) findViewById(R.id.TextAvgSpeed);
+        txtBumps = 	  (TextView) findViewById(R.id.TextView02);
 
 		pauseButton = (Button) findViewById(R.id.ButtonPause);
 		finishButton = (Button) findViewById(R.id.ButtonFinished);
+
+		final PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+        this.mWakeLock = pm.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK, "My Tag");
+        this.mWakeLock.acquire();
 
         sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
 
@@ -102,7 +115,7 @@ public class RecordingActivity extends Activity {
 
 				switch (rs.getState()) {
 					case RecordingService.STATE_IDLE:
-						trip = TripData.createTrip(RecordingActivity.this);
+						trip = TripData.createTrip(RecordingActivity.this);  //ATT
 						rs.startRecording(trip);
 						isRecording = true;
 						RecordingActivity.this.pauseButton.setEnabled(true);
@@ -170,7 +183,7 @@ public class RecordingActivity extends Activity {
                         trip.endTime = System.currentTimeMillis() - trip.totalPauseTime;
                     }
 					// Save trip so far (points and extent, but no purpose or notes)
-					fi = new Intent(RecordingActivity.this, SaveTrip.class);
+					fi = new Intent(RecordingActivity.this, SaveTrip.class); //ATTENTION
 					trip.updateTrip("","","","");
 				}
 				// Otherwise, cancel and go back to main screen
@@ -191,7 +204,7 @@ public class RecordingActivity extends Activity {
 		});
 	}
 
-	public void updateStatus(int points, float distance, float spdCurrent, float spdMax) {
+	public void updateStatus(int points, float distance, float spdCurrent, float spdMax, int numBumps) {
 	    this.curDistance = distance;
 
 	    //TODO: check task status before doing this?
@@ -205,6 +218,8 @@ public class RecordingActivity extends Activity {
 
     	float miles = 0.0006212f * distance;
     	txtDistance.setText(String.format("%1.1f miles", miles));
+
+    	txtBumps.setText(""+numBumps);
 	}
 
 	void setListener() {
@@ -245,6 +260,10 @@ public class RecordingActivity extends Activity {
     public void onResume() {
         super.onResume();
 
+        final PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+        this.mWakeLock = pm.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK, "My Tag");
+        this.mWakeLock.acquire();
+
         timer = new Timer();
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
@@ -272,5 +291,13 @@ public class RecordingActivity extends Activity {
     public void onPause() {
         super.onPause();
         if (timer != null) timer.cancel();
+        this.mWakeLock.release();
     }
+
+    //@Override
+	//public void onDestroy(){
+    //	super.onDestroy();
+    //	if (timer != null) timer.cancel();
+    //    this.mWakeLock.release();
+    //}
 }

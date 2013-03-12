@@ -94,9 +94,15 @@ public class DbAdapter {
         + "trip integer, lat int, lgt int, "
         + "time double, acc float, alt double, speed float);";
 
+    private static final String TABLE_CREATE_FLAGS = "create table flags "
+        	+ "(_id integer primary key autoincrement, "
+            + "trip integer, lat int, lgt int, "
+            + "time double, acc float, alt double);";
+
     private static final String DATABASE_NAME = "data";
     private static final String DATA_TABLE_TRIPS = "trips";
     private static final String DATA_TABLE_COORDS = "coords";
+    private static final String DATA_TABLE_FLAGS = "flags";
 
     private final Context mCtx;
 
@@ -111,6 +117,7 @@ public class DbAdapter {
 
             db.execSQL(TABLE_CREATE_TRIPS);
             db.execSQL(TABLE_CREATE_COORDS);
+            db.execSQL(TABLE_CREATE_FLAGS);
         }
 
         @Override
@@ -119,6 +126,7 @@ public class DbAdapter {
               //      + newVersion + ", which will destroy all old data");
             db.execSQL("DROP TABLE IF EXISTS " + DATA_TABLE_TRIPS);
             db.execSQL("DROP TABLE IF EXISTS " + DATA_TABLE_COORDS);
+            db.execSQL("DROP TABLE IF EXISTS " + DATA_TABLE_FLAGS);
             onCreate(db);
         }
     }
@@ -160,6 +168,10 @@ public class DbAdapter {
         mDbHelper.close();
     }
 
+    public void onStop(){
+    	mDbHelper.close();
+    }
+
     // #### Coordinate table methods ####
 
     public boolean addCoordToTrip(long tripid, CyclePoint pt) {
@@ -186,8 +198,29 @@ public class DbAdapter {
         return success;
     }
 
+    public boolean addFlagToTrip(long tripid, CyclePoint pt) {
+    	boolean success = true;
+
+    	// Add the latest point
+        ContentValues rowValues = new ContentValues();
+        rowValues.put(K_POINT_TRIP, tripid);
+        rowValues.put(K_POINT_LAT, pt.getLatitudeE6());
+        rowValues.put(K_POINT_LGT, pt.getLongitudeE6());
+        rowValues.put(K_POINT_TIME, pt.time);
+        rowValues.put(K_POINT_ACC, pt.accuracy);
+        rowValues.put(K_POINT_ALT, pt.altitude);
+
+        success = success && (mDb.insert(DATA_TABLE_FLAGS, null, rowValues) > 0);
+
+        return success;
+    }
+
     public boolean deleteAllCoordsForTrip(long tripid) {
         return mDb.delete(DATA_TABLE_COORDS, K_POINT_TRIP + "=" + tripid, null) > 0;
+    }
+
+    public boolean deleteAllFlagsForTrip(long tripid) {
+        return mDb.delete(DATA_TABLE_FLAGS, K_POINT_TRIP + "=" + tripid, null) > 0;
     }
 
     public Cursor fetchAllCoordsForTrip(long tripid) {
@@ -195,6 +228,24 @@ public class DbAdapter {
             Cursor mCursor = mDb.query(true, DATA_TABLE_COORDS, new String[] {
                     K_POINT_LAT, K_POINT_LGT, K_POINT_TIME,
                     K_POINT_ACC, K_POINT_ALT, K_POINT_SPEED },
+                    K_POINT_TRIP + "=" + tripid,
+                    null, null, null, K_POINT_TIME, null);
+
+            if (mCursor != null) {
+                mCursor.moveToFirst();
+            }
+            return mCursor;
+    	} catch (Exception e) {
+    		//Log.v("GOT!",e.toString());
+    		return null;
+    	}
+    }
+
+    public Cursor fetchAllFlagsForTrip(long tripid) {
+    	try {
+            Cursor mCursor = mDb.query(true, DATA_TABLE_FLAGS, new String[] {
+                    K_POINT_LAT, K_POINT_LGT, K_POINT_TIME,
+                    K_POINT_ACC, K_POINT_ALT},
                     K_POINT_TRIP + "=" + tripid,
                     null, null, null, K_POINT_TIME, null);
 

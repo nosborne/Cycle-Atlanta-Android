@@ -43,6 +43,8 @@ import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.SQLException;
+import android.hardware.Sensor;
+import android.hardware.SensorManager;
 import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
@@ -119,9 +121,12 @@ public class MainInput extends Activity {
 			public void onClick(View v) {
 			    // Before we go to record, check GPS status
 			    final LocationManager manager = (LocationManager) getSystemService( Context.LOCATION_SERVICE );
-			    if ( !manager.isProviderEnabled( LocationManager.GPS_PROVIDER ) ) {
+			    final SensorManager sm = (SensorManager)getSystemService(SENSOR_SERVICE);
+			    if ( !manager.isProviderEnabled( LocationManager.GPS_PROVIDER)) {
 			        buildAlertMessageNoGps();
-			    } else {
+			    }else if(sm.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD) == null) {
+			    	buildAlertMessageNoMag();
+			    }else{
 	                startActivity(i);
 	                MainInput.this.finish();
 			    }
@@ -150,6 +155,21 @@ public class MainInput extends Activity {
                });
         final AlertDialog alert = builder.create();
         alert.show();
+    }
+
+    private void buildAlertMessageNoMag() {
+    	final AlertDialog.Builder dlgAlert  = new AlertDialog.Builder(this);
+
+    	dlgAlert.setMessage("Your phone's Magnetic sensor is disabled. Cycle Atlanta needs Magnetic sensing for road sensing interactions.");
+    	dlgAlert.setPositiveButton("Ok",
+    		    new DialogInterface.OnClickListener() {
+    		        public void onClick(DialogInterface dialog, int which) {
+    		          //dismiss the dialog
+    		        }
+    		    });
+    	dlgAlert.setCancelable(false);
+
+    	dlgAlert.create().show();
     }
 
     private void showWelcomeDialog() {
@@ -248,6 +268,7 @@ public class MainInput extends Activity {
 	    DbAdapter mDbHelper = new DbAdapter(MainInput.this);
         mDbHelper.open();
         mDbHelper.deleteAllCoordsForTrip(tripId);
+        mDbHelper.deleteAllFlagsForTrip(tripId);
         mDbHelper.deleteTrip(tripId);
         mDbHelper.close();
         ListView listSavedTrips = (ListView) findViewById(R.id.ListSavedTrips);

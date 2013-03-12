@@ -5,6 +5,7 @@
 	<LinearLayout android:layout_below="@+id/TextRecordStats"
 		android:layout_height="wrap_content" android:orientation="vertical"
 		android:id="@+id/StatsLinearLayout" android:layout_width="fill_parent" android:layout_marginLeft="3sp">
+
 		<TextView android:layout_height="wrap_content"
 			android:layout_alignParentTop="true" android:id="@+id/TextRecordStats"
 			android:text="Points collected: 0" android:layout_width="fill_parent"></TextView>
@@ -41,12 +42,59 @@
             android:layout_width="wrap_content" android:layout_above="@+id/TextView03"
             android:id="@+id/TextMaxSpeed" android:text="Max Speed:"></TextView>
 
-        <RelativeLayout android:id="@+id/RelativeLayout04"
-            android:layout_height="wrap_content" android:layout_width="fill_parent">
-            <TextView android:id="@+id/TextView014" android:layout_height="wrap_content" android:text="Average Speed:"
-                android:layout_alignParentLeft="true" android:textStyle="bold" android:layout_marginTop="5sp" android:layout_width="wrap_content" android:textSize="26sp"></TextView>
-         <TextView android:layout_height="wrap_content" android:layout_marginTop="5sp"
-            android:textStyle="bold" android:id="@+id/TextAvgSpeed" android:layout_alignParentRight="true" android:text="0 mph" android:layout_width="wrap_content" android:layout_marginRight="5sp" android:textSize="26sp"></TextView>
+        <RelativeLayout
+            android:id="@+id/RelativeLayout04"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content" >
+
+            <TextView
+                android:id="@+id/TextView014"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_marginTop="5sp"
+                android:text="Average Speed:"
+                android:textSize="26sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/TextAvgSpeed"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_marginRight="5sp"
+                android:layout_marginTop="5sp"
+                android:text="0 mph"
+                android:textSize="26sp"
+                android:textStyle="bold" />
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/RelativeLayout07"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5sp" >
+
+            <TextView
+                android:id="@+id/TextView01"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_marginTop="5sp"
+                android:text="Road Issues:"
+                android:textSize="26sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/TextView02"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_marginRight="5sp"
+                android:layout_marginTop="5sp"
+                android:text="0"
+                android:textSize="26sp"
+                android:textStyle="bold" />
         </RelativeLayout>
 		
 		
@@ -54,4 +102,14 @@
 <LinearLayout android:layout_above="@+id/Button01" android:layout_height="wrap_content" android:layout_centerHorizontal="true" android:layout_alignParentBottom="true" android:id="@+id/BottomButtons" android:layout_width="fill_parent">
 <Button android:id="@+id/ButtonPause" android:text="@string/pauseButtonLabel"  android:layout_height="fill_parent" android:layout_weight="1" android:layout_width="fill_parent" android:drawableLeft="@android:drawable/ic_media_pause" android:textStyle="bold" android:textSize="18sp"></Button><Button android:id="@+id/ButtonFinished" android:text="@string/finishedButtonLabel" android:layout_height="fill_parent" android:layout_width="fill_parent" android:layout_weight="1" android:drawableLeft="@android:drawable/ic_media_next" android:textStyle="bold" android:textSize="18sp"></Button>
 </LinearLayout>
+
+<RelativeLayout
+    android:id="@+id/RelativeLayout06"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:layout_alignParentLeft="true"
+    android:layout_alignParentTop="true" >
+</RelativeLayout>
+
+
 </RelativeLayout>
