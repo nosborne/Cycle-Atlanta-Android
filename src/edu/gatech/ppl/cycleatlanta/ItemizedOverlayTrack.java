@@ -38,6 +38,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.drawable.Drawable;
+import android.widget.Toast;
 
 import com.google.android.maps.ItemizedOverlay;
 import com.google.android.maps.OverlayItem;
@@ -45,6 +46,8 @@ import com.google.android.maps.OverlayItem;
 public class ItemizedOverlayTrack extends ItemizedOverlay<OverlayItem> {
 	private final ArrayList<OverlayItem> overlays = new ArrayList<OverlayItem>();
 	Context mContext = null;
+	private int selected = 0;
+	private int buffKey = 0;
 	private boolean should_delete = false;
 
 	public ItemizedOverlayTrack(Drawable defaultMarker) {
@@ -86,18 +89,49 @@ public class ItemizedOverlayTrack extends ItemizedOverlay<OverlayItem> {
 	  if(mContext != null){
 		  should_delete = false;
 		  //OverlayItem item = overlays.get(index);
-		  AlertDialog.Builder dialog = new AlertDialog.Builder(mContext);
-		  //dialog.setTitle(item.getTitle());
-		  //dialog.setMessage(item.getSnippet());
-		  //dialog.setTitle("title");
-		  dialog.setMessage("Do you want to delete this road issue?");
-		  dialog.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-	           public void onClick(DialogInterface dialog, int id) {
-	        	   delete_item(index2);
-	           }
-	       });
-		  dialog.setNegativeButton("CANCEL", null);
-		  dialog.create().show();
+		  AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+		  builder.setTitle("Add Details");
+		  final CharSequence[] detailList = {
+				  "Asset: Water Fountain",
+				  "Asset: Secret Passage",
+				  "Asset: Public Restrooms",
+				  "Asset: Bike Shop",
+				  "Asset: Bike Parking",
+				  "Issue: Pavement Issue",
+				  "Issue: Traffic Signal",
+				  "Issue: Enforcement",
+				  "Issue: Bike Parking",
+				  "Issue: Bike Lane Issue"};
+
+		  builder.setSingleChoiceItems(detailList, selected, new DialogInterface.OnClickListener()
+		  {
+			@Override
+			public void onClick(DialogInterface dialog, int which)
+			{
+				buffKey = which;
+			}
+		})
+		.setCancelable(false)
+		.setPositiveButton("OKAY", new DialogInterface.OnClickListener()
+		{
+			@Override
+			public void onClick(DialogInterface dialog, int which)
+			{
+				Toast.makeText(mContext,"Select "+detailList[buffKey],Toast.LENGTH_SHORT).show();
+				selected = buffKey;
+			}
+		})
+		.setNegativeButton("CANCEL", new DialogInterface.OnClickListener()
+		{
+			@Override
+			public void onClick(DialogInterface dialog, int which)
+			{
+				Toast.makeText(mContext,"Cancel Click",Toast.LENGTH_SHORT).show();
+			}
+		});
+
+		AlertDialog alert = builder.create();
+		alert.show();
 	  }
 	  return true;
 	}
