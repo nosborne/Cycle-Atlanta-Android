@@ -111,7 +111,7 @@ public final class R {
         public static final int ZipLayout3=0x7f07005a;
         public static final int ageGroup=0x7f070041;
         public static final int ageSpinner=0x7f070043;
-        public static final int editText1=0x7f07000b;
+        public static final int commentText=0x7f07000b;
         public static final int ethnicityGroup=0x7f070044;
         public static final int ethnicitySpinner=0x7f070046;
         public static final int homeincomeGroup=0x7f070047;

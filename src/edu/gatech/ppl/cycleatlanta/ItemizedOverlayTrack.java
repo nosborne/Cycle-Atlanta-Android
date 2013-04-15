@@ -39,10 +39,16 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.drawable.Drawable;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
+import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.RadioGroup.OnCheckedChangeListener;
 import android.widget.Spinner;
 import android.widget.Toast;
 
@@ -52,8 +58,6 @@ import com.google.android.maps.OverlayItem;
 public class ItemizedOverlayTrack extends ItemizedOverlay<OverlayItem> {
 	private final ArrayList<OverlayItem> overlays = new ArrayList<OverlayItem>();
 	Context mContext = null;
-	private int selected = 0;
-	private final int buffKey = 0;
 	private boolean should_delete = false;
 
 	public ItemizedOverlayTrack(Drawable defaultMarker) {
@@ -91,7 +95,10 @@ public class ItemizedOverlayTrack extends ItemizedOverlay<OverlayItem> {
 
 	@Override
 	protected boolean onTap(int index) {
-	  final int index2 = index;
+		final int index2 = index;
+		final String spinnerText = "";
+		final String radioText = "";
+		final String commentText = "";
 	  if(mContext != null){
 		  should_delete = false;
 		  //OverlayItem item = overlays.get(index);
@@ -108,8 +115,15 @@ public class ItemizedOverlayTrack extends ItemizedOverlay<OverlayItem> {
 				  "Bike Shop",
 				  "Bike Parking"};
 
-		  //crate spinner and set values
-		  Spinner spinner = (Spinner) view.findViewById(R.id.issueTypeSpinner);
+
+
+		  //create radio group
+		  final RadioGroup rg = (RadioGroup) view.findViewById(R.id.issueList);
+		  //create spinner and set values
+		  final Spinner spinner = (Spinner) view.findViewById(R.id.issueTypeSpinner);
+		  //crate edit text
+		  final EditText commentTxt = (EditText) view.findViewById(R.id.commentText);
+
 		  List<String> spinnerVals = new ArrayList<String>();
 		  spinnerVals.add("Asset");
 		  spinnerVals.add("Issue");
@@ -117,8 +131,69 @@ public class ItemizedOverlayTrack extends ItemizedOverlay<OverlayItem> {
 		  adp.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		  spinner.setAdapter(adp);
 
-		  RadioGroup rg = (RadioGroup) view.findViewById(R.id.issueList);
-		  int radioChecked = rg.getCheckedRadioButtonId();
+		  spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener()
+		  {
+			    public void onItemSelected(AdapterView<?> parent, View view, int pos, long id)
+			    {
+			    	spinnerText = spinner.getSelectedItem().toString();
+
+			    	for (int i=0; i < rg.getChildCount();i++)
+			    	{
+			    		//if asset
+				    	if (spinnerText == "Asset")
+				    	{
+				    		View v = rg.getChildAt(i);
+				    		if (v instanceof RadioButton)
+				    		{
+				    			RadioButton btn = (RadioButton)v;
+				    			btn.setText(assetList[i]);
+				    		}
+				    	}
+				    	//if issue
+				    	if (spinnerText == "Issue")
+				    	{
+				    		View v = rg.getChildAt(i);
+				    		if (v instanceof RadioButton)
+				    		{
+				    			RadioButton btn = (RadioButton)v;
+				    			btn.setText(issueList[i]);
+				    		}
+
+				    	}
+			    	}
+
+			    }
+			    public void onNothingSelected(AdapterView<?> parent)
+			    {
+			    }
+			});
+
+		  //get radio group and set value to radioText
+		  rg.setOnCheckedChangeListener(new OnCheckedChangeListener()
+		    {
+		        public void onCheckedChanged(RadioGroup group, int checkedId)
+		        {
+		        	RadioButton chkdBtn = (RadioButton) rg.findViewById(checkedId);
+	                radioText = chkdBtn.getText().toString();
+		        }
+		    });
+
+		  //set value of commmentTxt from EditText box
+		  commentTxt.addTextChangedListener(new TextWatcher()
+		  {
+			@Override
+			public void afterTextChanged(Editable s)
+			{
+				commentText = s.toString();
+			}
+
+			@Override
+			public void beforeTextChanged(CharSequence s, int start, int count,int after){}
+
+			@Override
+			public void onTextChanged(CharSequence s, int start, int before,int count){}
+		  });
+
 
 
 		builder.setView(view)
@@ -128,7 +203,7 @@ public class ItemizedOverlayTrack extends ItemizedOverlay<OverlayItem> {
 			@Override
 			public void onClick(DialogInterface dialog, int which)
 			{
-				Toast.makeText(mContext,"Select "+issueList[buffKey],Toast.LENGTH_SHORT).show();
+				Toast.makeText(mContext,"Spinner: "+spinnerText+" Radio: " +radioText+ " Comment: "+commentText,Toast.LENGTH_SHORT).show();
 				selected = buffKey;
 			}
 		})

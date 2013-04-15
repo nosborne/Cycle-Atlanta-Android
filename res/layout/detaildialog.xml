@@ -82,7 +82,7 @@
         android:textAppearance="?android:attr/textAppearanceMedium" />
 
     <EditText
-        android:id="@+id/editText1"
+        android:id="@+id/commentText"
         android:layout_width="match_parent"
         android:layout_height="77dp"
         android:ems="10"
