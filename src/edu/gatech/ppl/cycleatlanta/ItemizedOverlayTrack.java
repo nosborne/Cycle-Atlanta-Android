@@ -35,6 +35,7 @@ package edu.gatech.ppl.cycleatlanta;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -44,6 +45,7 @@ import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.RadioButton;
@@ -96,9 +98,7 @@ public class ItemizedOverlayTrack extends ItemizedOverlay<OverlayItem> {
 	@Override
 	protected boolean onTap(int index) {
 		final int index2 = index;
-		final String spinnerText = "";
-		final String radioText = "";
-		final String commentText = "";
+
 	  if(mContext != null){
 		  should_delete = false;
 		  //OverlayItem item = overlays.get(index);
@@ -131,8 +131,9 @@ public class ItemizedOverlayTrack extends ItemizedOverlay<OverlayItem> {
 		  adp.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		  spinner.setAdapter(adp);
 
-		  spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener()
+		  class SpinnerOnItemSelectListener extends Activity implements OnItemSelectedListener
 		  {
+			  	String spinnerText = "";
 			    public void onItemSelected(AdapterView<?> parent, View view, int pos, long id)
 			    {
 			    	spinnerText = spinner.getSelectedItem().toString();
@@ -166,21 +167,28 @@ public class ItemizedOverlayTrack extends ItemizedOverlay<OverlayItem> {
 			    public void onNothingSelected(AdapterView<?> parent)
 			    {
 			    }
-			});
+			}
+
+		  spinner.setOnItemSelectedListener(new SpinnerOnItemSelectListener());
+
 
 		  //get radio group and set value to radioText
-		  rg.setOnCheckedChangeListener(new OnCheckedChangeListener()
-		    {
+
+		  class RadioOnCheckedChangeListener extends Activity implements OnCheckedChangeListener
+		  {
+			  String radioText = "";
 		        public void onCheckedChanged(RadioGroup group, int checkedId)
 		        {
 		        	RadioButton chkdBtn = (RadioButton) rg.findViewById(checkedId);
 	                radioText = chkdBtn.getText().toString();
 		        }
-		    });
+		  }
+		  rg.setOnCheckedChangeListener(new RadioOnCheckedChangeListener());
 
 		  //set value of commmentTxt from EditText box
-		  commentTxt.addTextChangedListener(new TextWatcher()
+		  class CommentTextWatcher extends Activity implements TextWatcher
 		  {
+			String commentText = "";
 			@Override
 			public void afterTextChanged(Editable s)
 			{
@@ -192,9 +200,8 @@ public class ItemizedOverlayTrack extends ItemizedOverlay<OverlayItem> {
 
 			@Override
 			public void onTextChanged(CharSequence s, int start, int before,int count){}
-		  });
-
-
+		  }
+		  commentTxt.addTextChangedListener(new CommentTextWatcher());
 
 		builder.setView(view)
 		.setCancelable(false)
@@ -203,8 +210,7 @@ public class ItemizedOverlayTrack extends ItemizedOverlay<OverlayItem> {
 			@Override
 			public void onClick(DialogInterface dialog, int which)
 			{
-				Toast.makeText(mContext,"Spinner: "+spinnerText+" Radio: " +radioText+ " Comment: "+commentText,Toast.LENGTH_SHORT).show();
-				selected = buffKey;
+				Toast.makeText(mContext,"Saved",Toast.LENGTH_SHORT).show();
 			}
 		})
 		.setNegativeButton("CANCEL", new DialogInterface.OnClickListener()
