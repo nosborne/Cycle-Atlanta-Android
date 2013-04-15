@@ -33,11 +33,17 @@ package edu.gatech.ppl.cycleatlanta;
 // This is all from the hello-mapview tutorial
 
 import java.util.ArrayList;
+import java.util.List;
 
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.drawable.Drawable;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.RadioGroup;
+import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.google.android.maps.ItemizedOverlay;
@@ -47,7 +53,7 @@ public class ItemizedOverlayTrack extends ItemizedOverlay<OverlayItem> {
 	private final ArrayList<OverlayItem> overlays = new ArrayList<OverlayItem>();
 	Context mContext = null;
 	private int selected = 0;
-	private int buffKey = 0;
+	private final int buffKey = 0;
 	private boolean should_delete = false;
 
 	public ItemizedOverlayTrack(Drawable defaultMarker) {
@@ -90,34 +96,39 @@ public class ItemizedOverlayTrack extends ItemizedOverlay<OverlayItem> {
 		  should_delete = false;
 		  //OverlayItem item = overlays.get(index);
 		  AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
-		  builder.setTitle("Add Details");
-		  final CharSequence[] detailList = {
-				  "Asset: Water Fountain",
-				  "Asset: Secret Passage",
-				  "Asset: Public Restrooms",
-				  "Asset: Bike Shop",
-				  "Asset: Bike Parking",
-				  "Issue: Pavement Issue",
-				  "Issue: Traffic Signal",
-				  "Issue: Enforcement",
-				  "Issue: Bike Parking",
-				  "Issue: Bike Lane Issue"};
+		  View view = LayoutInflater.from(mContext).inflate(R.layout.detaildialog, null, false);
+		  final CharSequence[] issueList = {"Pavement Issue",
+				  "Traffic Signal",
+				  "Enforcement",
+				  "Bike Parking",
+				  "Bike Lane Issue"};
+		  final CharSequence[] assetList = {"Water Fountain",
+				  "Secret Passage",
+				  "Public Restrooms",
+				  "Bike Shop",
+				  "Bike Parking"};
 
-		  builder.setSingleChoiceItems(detailList, selected, new DialogInterface.OnClickListener()
-		  {
-			@Override
-			public void onClick(DialogInterface dialog, int which)
-			{
-				buffKey = which;
-			}
-		})
+		  //crate spinner and set values
+		  Spinner spinner = (Spinner) view.findViewById(R.id.issueTypeSpinner);
+		  List<String> spinnerVals = new ArrayList<String>();
+		  spinnerVals.add("Asset");
+		  spinnerVals.add("Issue");
+		  ArrayAdapter<String> adp = new ArrayAdapter<String>(mContext,android.R.layout.simple_spinner_item,spinnerVals);
+		  adp.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+		  spinner.setAdapter(adp);
+
+		  RadioGroup rg = (RadioGroup) view.findViewById(R.id.issueList);
+		  int radioChecked = rg.getCheckedRadioButtonId();
+
+
+		builder.setView(view)
 		.setCancelable(false)
 		.setPositiveButton("OKAY", new DialogInterface.OnClickListener()
 		{
 			@Override
 			public void onClick(DialogInterface dialog, int which)
 			{
-				Toast.makeText(mContext,"Select "+detailList[buffKey],Toast.LENGTH_SHORT).show();
+				Toast.makeText(mContext,"Select "+issueList[buffKey],Toast.LENGTH_SHORT).show();
 				selected = buffKey;
 			}
 		})
